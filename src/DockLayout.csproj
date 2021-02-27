@@ -7,14 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Manager\Pane\**" />
-    <EmbeddedResource Remove="Manager\Pane\**" />
-    <None Remove="Manager\Pane\**" />
-    <Page Remove="Manager\Pane\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Remove="Manager\DockLayout.cs" />
+    <Compile Remove="Manager\**" />
+    <EmbeddedResource Remove="Manager\**" />
+    <None Remove="Manager\**" />
+    <Page Remove="Manager\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -24,10 +20,6 @@
     <PackageReference Include="Dirkster.AvalonDock.Themes.Metro" Version="4.50.2" />
     <PackageReference Include="Dirkster.AvalonDock.Themes.VS2010" Version="4.50.2" />
     <PackageReference Include="Dirkster.AvalonDock.Themes.VS2013" Version="4.50.2" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Manager\" />
   </ItemGroup>
 
 </Project>
