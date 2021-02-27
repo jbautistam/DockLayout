@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31019.35
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DockLayout", "DockLayout.csproj", "{1E8421C0-A48E-48EF-A9C7-77089B16D1B1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DockLayout", "src\DockLayout.csproj", "{1E8421C0-A48E-48EF-A9C7-77089B16D1B1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
