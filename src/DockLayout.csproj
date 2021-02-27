@@ -7,13 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Manager\**" />
-    <EmbeddedResource Remove="Manager\**" />
-    <None Remove="Manager\**" />
-    <Page Remove="Manager\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Dirkster.AvalonDock" Version="4.50.2" />
     <PackageReference Include="Dirkster.AvalonDock.Themes.Aero" Version="4.50.1" />
     <PackageReference Include="Dirkster.AvalonDock.Themes.Expression" Version="4.50.2" />
