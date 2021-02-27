@@ -78,21 +78,21 @@ namespace Bau.Controls.DockLayout
 				else
 				{
 					LayoutAnchorGroup layoutGroup = GetGroupPane(dckManager.Layout, position);
-					LayoutAnchorable layoutPane = new LayoutAnchorable { Title = header, ToolTip = header };
+					LayoutAnchorable layoutAnchorable = new LayoutAnchorable { Title = header, ToolTip = header };
 
 						// Añade el contenido
-						layoutPane.Content = control;
-						layoutPane.ContentId = id;
+						layoutAnchorable.Content = control;
+						layoutAnchorable.ContentId = id;
 						// Asigna los parámetros del panel
-						layoutPane.FloatingHeight = 200;
-						layoutPane.FloatingWidth = 200;
-						layoutPane.AutoHideWidth = 400;
+						layoutAnchorable.FloatingHeight = 200;
+						layoutAnchorable.FloatingWidth = 200;
+						layoutAnchorable.AutoHideWidth = 400;
 						// Añade el contenido al grupo
-						layoutGroup.Children.Add(layoutPane);
-						layoutPane.IsActive = true;
-						layoutPane.IsVisible = true;
+						layoutGroup.Children.Add(layoutAnchorable);
+						layoutAnchorable.IsActive = true;
+						layoutAnchorable.IsVisible = true;
 						// Añade el panel a la lista de documentos del controlador
-						AddDocument(id, header, DockLayoutDocumentModel.DocumentType.Panel, layoutPane, control, tag);
+						AddDocument(id, header, DockLayoutDocumentModel.DocumentType.Panel, layoutAnchorable, control, tag);
 				}
 		}
 
@@ -116,6 +116,7 @@ namespace Bau.Controls.DockLayout
 								layoutGroup.Children[0].AutoHideMinWidth = 200;
 							break;
 						default:
+								layoutGroup.Children[0].FloatingHeight = dckManager.ActualHeight / 4;
 								layoutGroup.Children[0].AutoHideHeight = dckManager.ActualHeight / 6;
 								layoutGroup.Children[0].AutoHideMinHeight = 200;
 							break;
