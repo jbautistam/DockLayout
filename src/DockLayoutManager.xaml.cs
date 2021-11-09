@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -45,6 +47,7 @@ namespace Bau.Controls.DockLayout
 		// Eventos públicos
 		public event EventHandler<EventArguments.OpenFileRequiredArgs> OpenFileRequired;
 		public event EventHandler<EventArguments.ClosingEventArgs> Closing;
+		public event EventHandler<EventArguments.ClosedEventArgs> Closed;
 		public event EventHandler ActiveDocumentChanged;
 		// Variables privadas
 		private DockLayoutDocumentModel _activeDocument;
@@ -53,6 +56,9 @@ namespace Bau.Controls.DockLayout
 		{
 			// Inicializa los componentes
 			InitializeComponent();
+
+				dckManager.DocumentsSource = Documents;
+
 			// Inicializa los manejadores de eventos
 			dckManager.ActiveContentChanged += (sender, evntArgs) =>
 														{
@@ -206,7 +212,9 @@ namespace Bau.Controls.DockLayout
 				// Añade el documento al diccionario
 				Documents.Add(document.Id, document);
 				// Asigna los manejadores de evento a la vista
+				// dckManager.DocumentClosing += (sender, args) => args.Cancel = !TreatEventCloseForm(document);
 				layoutContent.Closing += (sender, args) => args.Cancel = !TreatEventCloseForm(document);
+				//layoutContent.Closed += (sender, args) => RaiseEventClosedDocument(document);
 				layoutContent.IsActiveChanged += (sender, args) => RaiseEventChangeDocument(document);
 				// Activa el documento
 				document.LayoutContent.IsActive = true;
@@ -266,8 +274,8 @@ namespace Bau.Controls.DockLayout
 						canClose = !args.Cancel;
 				}
 				// Si se debe cerrar, se quita del diccionario
-				if (canClose && Documents.ContainsKey(document.Id))
-					Documents.Remove(document.Id);
+				if (canClose)
+					RemoveTab(document);
 				// Devuelve el valor que indica si se puede cerrar el documento
 				return canClose;
 		}
@@ -278,13 +286,57 @@ namespace Bau.Controls.DockLayout
 		public void CloseTab(string tabId)
 		{
 			if (Documents.TryGetValue(tabId, out DockLayoutDocumentModel document))
-			{
-				// Cierra el documento
-				document.LayoutContent.Close();
-				// Quita el elemento del diccionario
-				Documents.Remove(tabId);
-			}
+				RemoveTab(document);
 		}
+
+		/// <summary>
+		///		Elimina una ficha
+		/// </summary>
+		private void RemoveTab(DockLayoutDocumentModel document)
+		{
+			// Elimina el manejador de eventos
+			EventManager.EventReflectionService.RemoveAllEventHandlers(document.LayoutContent);
+			// Lanza el evento de cierre (antes de cerrar el layout, para que se liberen los recursos)
+			RaiseEventClosedDocument(document);
+			// Cierra el documento
+			//document.LayoutContent.CanClose = true;
+			//document.LayoutContent.CanClose = false;
+			//document.LayoutContent.CanFloat = false;
+			document.LayoutContent.Close();
+			// Quita el elemento del diccionario
+			if (Documents.ContainsKey(document.Id))
+				Documents.Remove(document.Id);
+		}
+
+		/// <summary>
+		///		Lanza el evento de documento cerrado (antes de cerrar el layout)
+		/// </summary>
+		private void RaiseEventClosedDocument(DockLayoutDocumentModel document)
+		{
+			Closed?.Invoke(this, new EventArguments.ClosedEventArgs(document));
+		}
+
+		//internal void _ExecuteCloseCommand(LayoutDocument document)
+		//      {
+		//          if (DocumentClosing != null)
+		//          {
+		//              var evargs = new DocumentClosingEventArgs(document);
+		//              DocumentClosing(this, evargs);
+		//              if (evargs.Cancel)
+		//                  return;
+		//          }
+
+		//          if (!document.TestCanClose())
+		//              return;
+
+		//          document.Close();
+
+		//          if (DocumentClosed != null)
+		//          {
+		//              var evargs = new DocumentClosedEventArgs(document);
+		//              DocumentClosed(this, evargs);
+		//          }
+		//      }
 
 		/// <summary>
 		///		Cierra todas las ventanas
@@ -368,6 +420,15 @@ namespace Bau.Controls.DockLayout
 			if (document != null && (document.LayoutContent?.IsActive ?? false))
 				ActiveDocumentChanged?.Invoke(this, EventArgs.Empty);
 		}
+
+		///// <summary>
+		/////		Lanza el evento de cierre de documento
+		///// </summary>
+		//private void RaiseEventClosedDocument(DockLayoutDocumentModel document)
+		//{
+		//	if (document != null)
+		//		Closed?.Invoke(this, new EventArguments.ClosingEventArgs(document));
+		//}
 
 		/// <summary>
 		///		Documentos

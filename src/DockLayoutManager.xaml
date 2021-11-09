@@ -9,7 +9,10 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
 
-	<avalonDock:DockingManager x:Name="dckManager" Drop="dckManager_Drop" AllowDrop="True"
+	<avalonDock:DockingManager x:Name="dckManager" Drop="dckManager_Drop" 
+			AnchorablesSource="{Binding Tools}"
+			DocumentsSource="{Binding Files}"
+			AllowDrop="True"
 			AllowMixedOrientation="True"
 			AutoWindowSizeWhenOpened="True"
 			IsVirtualizingAnchorable="True"
