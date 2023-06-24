@@ -8,7 +8,7 @@ namespace Bau.Controls.DockLayout.Models
 	/// <summary>
 	///		Documento o panel asociado a un <see cref="DockLayout"/>
 	/// </summary>
-	public class DockLayoutDocumentModel
+	public class DockLayoutDocumentModel : IDisposable
 	{
 		/// <summary>
 		///		Tipo de documento
@@ -32,6 +32,34 @@ namespace Bau.Controls.DockLayout.Models
 		}
 
 		/// <summary>
+		///		Libera la memoria
+		/// </summary>
+		protected virtual void Dispose(bool disposing)
+		{
+			if (!Disposed)
+			{
+				// Libera la memoria si es necesario
+				if (disposing)
+				{
+					LayoutContent = null;
+					UserControl = null;
+					Tag = null;
+				}
+				// Indica que ya se ha liberado la memoria
+				Disposed = true;
+			}
+		}
+
+		/// <summary>
+		///		Libera la memoria
+		/// </summary>
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+
+		/// <summary>
 		///		Clave
 		/// </summary>
 		public string Id { get; set; }
@@ -49,16 +77,21 @@ namespace Bau.Controls.DockLayout.Models
 		/// <summary>
 		///		Layout al que se asocia la ventana
 		/// </summary>
-		public LayoutContent LayoutContent { get; }
+		public LayoutContent LayoutContent { get; private set; }
 
 		/// <summary>
 		///		Control de usuario
 		/// </summary>
-		public UserControl UserControl { get; }
+		public UserControl UserControl { get; private set; }
 
 		/// <summary>
 		///		Objeto asociado
 		/// </summary>
-		public object Tag { get; }
+		public object Tag { get; private set; }
+
+		/// <summary>
+		///		Indica si se ha liberado la memoria
+		/// </summary>
+		public bool Disposed { get; private set; }
 	}
 }

@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
-using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -56,9 +54,8 @@ namespace Bau.Controls.DockLayout
 		{
 			// Inicializa los componentes
 			InitializeComponent();
-
-				dckManager.DocumentsSource = Documents;
-
+			// Asigna el contexto de los documentos
+			dckManager.DocumentsSource = Documents;
 			// Inicializa los manejadores de eventos
 			dckManager.ActiveContentChanged += (sender, evntArgs) =>
 														{
@@ -152,7 +149,7 @@ namespace Bau.Controls.DockLayout
 					LayoutDocument layoutDocument = new LayoutDocument { Title = header, ToolTip = header };
 
 						// Crea un documento y le asigna el control de contenido
-						if (documentPane != null)
+						if (documentPane is not null)
 						{ 
 							// Asigna el control
 							layoutDocument.Content = control;
@@ -212,9 +209,7 @@ namespace Bau.Controls.DockLayout
 				// Añade el documento al diccionario
 				Documents.Add(document.Id, document);
 				// Asigna los manejadores de evento a la vista
-				// dckManager.DocumentClosing += (sender, args) => args.Cancel = !TreatEventCloseForm(document);
 				layoutContent.Closing += (sender, args) => args.Cancel = !TreatEventCloseForm(document);
-				//layoutContent.Closed += (sender, args) => RaiseEventClosedDocument(document);
 				layoutContent.IsActiveChanged += (sender, args) => RaiseEventChangeDocument(document);
 				// Activa el documento
 				document.LayoutContent.IsActive = true;
@@ -243,17 +238,13 @@ namespace Bau.Controls.DockLayout
 		/// </summary>
 		private LayoutAnchorSide GetAnchorSide(LayoutRoot layoutRoot, DockPosition position)
 		{
-			switch (position)
-			{
-				case DockPosition.Right:
-					return layoutRoot.RightSide;
-				case DockPosition.Left:
-					return layoutRoot.LeftSide;
-				case DockPosition.Top:
-					return layoutRoot.TopSide;
-				default:
-					return layoutRoot.BottomSide;
-			}
+			return position switch
+						{
+							DockPosition.Right => layoutRoot.RightSide,
+							DockPosition.Left => layoutRoot.LeftSide,
+							DockPosition.Top => layoutRoot.TopSide,
+							_ => layoutRoot.BottomSide
+						};
 		}
 
 		/// <summary>
@@ -294,18 +285,19 @@ namespace Bau.Controls.DockLayout
 		/// </summary>
 		private void RemoveTab(DockLayoutDocumentModel document)
 		{
-			// Elimina el manejador de eventos
+			// Elimina los manejadores de eventos asociados al documento
+			EventManager.EventReflectionService.RemoveAllEventHandlers(document);
 			EventManager.EventReflectionService.RemoveAllEventHandlers(document.LayoutContent);
+			EventManager.EventReflectionService.RemoveAllEventHandlers(document.UserControl);
 			// Lanza el evento de cierre (antes de cerrar el layout, para que se liberen los recursos)
 			RaiseEventClosedDocument(document);
 			// Cierra el documento
-			//document.LayoutContent.CanClose = true;
-			//document.LayoutContent.CanClose = false;
-			//document.LayoutContent.CanFloat = false;
 			document.LayoutContent.Close();
 			// Quita el elemento del diccionario
 			if (Documents.ContainsKey(document.Id))
 				Documents.Remove(document.Id);
+			// Libera la memoria
+			document.Dispose();
 		}
 
 		/// <summary>
@@ -316,34 +308,12 @@ namespace Bau.Controls.DockLayout
 			Closed?.Invoke(this, new EventArguments.ClosedEventArgs(document));
 		}
 
-		//internal void _ExecuteCloseCommand(LayoutDocument document)
-		//      {
-		//          if (DocumentClosing != null)
-		//          {
-		//              var evargs = new DocumentClosingEventArgs(document);
-		//              DocumentClosing(this, evargs);
-		//              if (evargs.Cancel)
-		//                  return;
-		//          }
-
-		//          if (!document.TestCanClose())
-		//              return;
-
-		//          document.Close();
-
-		//          if (DocumentClosed != null)
-		//          {
-		//              var evargs = new DocumentClosedEventArgs(document);
-		//              DocumentClosed(this, evargs);
-		//          }
-		//      }
-
 		/// <summary>
 		///		Cierra todas las ventanas
 		/// </summary>
 		public void CloseAllDocuments()
 		{
-			List<DockLayoutDocumentModel> documents = new List<DockLayoutDocumentModel>();
+			List<DockLayoutDocumentModel> documents = new();
 
 				// Nota: Al cerrar un formulario se modifica la colección Documents, por tanto no se puede hacer un recorrido sobre Documents
 				//			 porque da un error de colección modificada. Tampoco se puede hacer un recorrido for (int...) sobre Documents porque
@@ -417,23 +387,14 @@ namespace Bau.Controls.DockLayout
 		/// </summary>
 		private void RaiseEventChangeDocument(DockLayoutDocumentModel document)
 		{
-			if (document != null && (document.LayoutContent?.IsActive ?? false))
+			if (document?.LayoutContent?.IsActive ?? false)
 				ActiveDocumentChanged?.Invoke(this, EventArgs.Empty);
 		}
-
-		///// <summary>
-		/////		Lanza el evento de cierre de documento
-		///// </summary>
-		//private void RaiseEventClosedDocument(DockLayoutDocumentModel document)
-		//{
-		//	if (document != null)
-		//		Closed?.Invoke(this, new EventArguments.ClosingEventArgs(document));
-		//}
 
 		/// <summary>
 		///		Documentos
 		/// </summary>
-		public Dictionary<string, DockLayoutDocumentModel> Documents { get; } = new Dictionary<string, DockLayoutDocumentModel>();
+		public Dictionary<string, DockLayoutDocumentModel> Documents { get; } = new();
 
 		/// <summary>
 		///		Documento activo

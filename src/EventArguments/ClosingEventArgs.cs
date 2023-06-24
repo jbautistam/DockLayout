@@ -3,7 +3,7 @@
 namespace Bau.Controls.DockLayout.EventArguments
 {
 	/// <summary>
-	///		Arbumentos del evento de cierre
+	///		Argumentos del evento de cierre
 	/// </summary>
 	public class ClosingEventArgs : EventArgs
 	{
