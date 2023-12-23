@@ -48,7 +48,7 @@ namespace Bau.Controls.DockLayout
 		public event EventHandler<EventArguments.ClosedEventArgs> Closed;
 		public event EventHandler ActiveDocumentChanged;
 		// Variables privadas
-		private DockLayoutDocumentModel _activeDocument;
+		private DockLayoutDocumentModel? _activeDocument;
 
 		public DockLayoutManager()
 		{
@@ -69,7 +69,7 @@ namespace Bau.Controls.DockLayout
 		/// <summary>
 		///		Añade / selecciona un panel
 		/// </summary>
-		public void AddPane(string id, string header, UserControl control, object tag = null, DockPosition position = DockPosition.Bottom)
+		public void AddPane(string id, string header, UserControl control, object? tag = null, DockPosition position = DockPosition.Bottom)
 		{
 			DockLayoutDocumentModel previous = GetDocument(id);
 
@@ -385,7 +385,7 @@ namespace Bau.Controls.DockLayout
 		/// <summary>
 		///		Lanza el evento de cambio de documento
 		/// </summary>
-		private void RaiseEventChangeDocument(DockLayoutDocumentModel document)
+		private void RaiseEventChangeDocument(DockLayoutDocumentModel? document)
 		{
 			if (document?.LayoutContent?.IsActive ?? false)
 				ActiveDocumentChanged?.Invoke(this, EventArgs.Empty);
@@ -399,7 +399,7 @@ namespace Bau.Controls.DockLayout
 		/// <summary>
 		///		Documento activo
 		/// </summary>
-		public DockLayoutDocumentModel ActiveDocument
+		public DockLayoutDocumentModel? ActiveDocument
 		{
 			get { return _activeDocument; }
 			private set
