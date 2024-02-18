@@ -328,7 +328,7 @@ namespace Bau.Controls.DockLayout
 							documents[index].LayoutContent != null)
 						try
 						{
-							documents[index].LayoutContent.Close();
+							documents[index]?.LayoutContent?.Close();
 						}
 						catch { }
 		}
