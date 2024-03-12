@@ -274,7 +274,7 @@ public partial class DockLayoutManager : UserControl
 	/// </summary>
 	public void CloseTab(string tabId)
 	{
-		if (Documents.TryGetValue(tabId, out DockLayoutDocumentModel document))
+		if (Documents.TryGetValue(tabId, out DockLayoutDocumentModel? document))
 			RemoveTab(document);
 	}
 
