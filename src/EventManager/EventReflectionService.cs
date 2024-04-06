@@ -64,7 +64,8 @@ static public class EventReflectionService
 	static EventHandlerList GetStaticEventHandlerList(Type t, object obj)
 	{
 		MethodInfo mi = t.GetMethod("get_Events", AllBindings);
-		return (EventHandlerList)mi.Invoke(obj, new object[] { });
+
+		return (EventHandlerList) mi.Invoke(obj, new object[] { });
 	}
 
 	//--------------------------------------------------------------------------------

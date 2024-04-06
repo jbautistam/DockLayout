@@ -40,10 +40,10 @@ public partial class DockLayoutManager : UserControl
 		VS2013DarkTheme
 	}
 	// Eventos públicos
-	public event EventHandler<EventArguments.OpenFileRequiredArgs> OpenFileRequired;
-	public event EventHandler<EventArguments.ClosingEventArgs> Closing;
-	public event EventHandler<EventArguments.ClosedEventArgs> Closed;
-	public event EventHandler ActiveDocumentChanged;
+	public event EventHandler<EventArguments.OpenFileRequiredArgs>? OpenFileRequired;
+	public event EventHandler<EventArguments.ClosingEventArgs>? Closing;
+	public event EventHandler<EventArguments.ClosedEventArgs>? Closed;
+	public event EventHandler? ActiveDocumentChanged;
 	// Variables privadas
 	private DockLayoutDocumentModel? _activeDocument;
 
@@ -68,7 +68,7 @@ public partial class DockLayoutManager : UserControl
 	/// </summary>
 	public void AddPane(string id, string header, UserControl control, object? tag = null, DockPosition position = DockPosition.Bottom)
 	{
-		DockLayoutDocumentModel previous = GetDocument(id);
+		DockLayoutDocumentModel? previous = GetDocument(id);
 
 			if (previous is not null)
 			{
@@ -134,17 +134,18 @@ public partial class DockLayoutManager : UserControl
 	/// </summary>
 	public void AddDocument(string id, string header, UserControl control, object tag = null)
 	{
-		DockLayoutDocumentModel previous = GetDocument(id);
+		DockLayoutDocumentModel? previous = GetDocument(id);
 
 			if (previous != null)
 			{
-				previous.LayoutContent.IsActive = true;
+				if (previous.LayoutContent is not null)
+					previous.LayoutContent.IsActive = true;
 				ActiveDocument = previous;
 			}
 			else
 			{
-				LayoutDocumentPane documentPane = dckManager.Layout.Descendents().OfType<LayoutDocumentPane>().FirstOrDefault();
-				LayoutDocument layoutDocument = new LayoutDocument { Title = header, ToolTip = header };
+				LayoutDocumentPane? documentPane = dckManager.Layout.Descendents().OfType<LayoutDocumentPane>().FirstOrDefault();
+				LayoutDocument layoutDocument = new() { Title = header, ToolTip = header };
 
 					// Crea un documento y le asigna el control de contenido
 					if (documentPane is not null)
@@ -187,7 +188,8 @@ public partial class DockLayoutManager : UserControl
 		if (Documents.TryGetValue(oldTabId, out DockLayoutDocumentModel? document) && !Documents.ContainsKey(newTabId))
 		{
 			// Cambia el título
-			document.LayoutContent.Title = newHeader;
+			if (document.LayoutContent is not null)
+				document.LayoutContent.Title = newHeader;
 			// Añade el nuevo Id al diccionario y le cambia el Id interno
 			Documents.Add(newTabId, document);
 			document.Id = newTabId;
@@ -210,7 +212,8 @@ public partial class DockLayoutManager : UserControl
 			layoutContent.Closing += (sender, args) => args.Cancel = !TreatEventCloseForm(document);
 			layoutContent.IsActiveChanged += (sender, args) => RaiseEventChangeDocument(document);
 			// Activa el documento
-			document.LayoutContent.IsActive = true;
+			if (document.LayoutContent is not null)
+				document.LayoutContent.IsActive = true;
 			ActiveDocument = document;
 	}
 
@@ -222,10 +225,10 @@ public partial class DockLayoutManager : UserControl
 		LayoutAnchorSide layoutSide = GetAnchorSide(layoutRoot, position);
 
 			// Crea el panel si no existía
-			if (layoutSide == null)
+			if (layoutSide is null)
 				layoutSide = new LayoutAnchorSide();
 			// Añade un grupo si no existía
-			if (layoutSide.Children == null || layoutSide.Children.Count == 0)
+			if (layoutSide.Children.Count == 0)
 				layoutSide.Children.Add(new LayoutAnchorGroup());
 			// Devuelve el primer grupo
 			return layoutSide.Children[0];
@@ -285,12 +288,15 @@ public partial class DockLayoutManager : UserControl
 	{
 		// Elimina los manejadores de eventos asociados al documento
 		EventManager.EventReflectionService.RemoveAllEventHandlers(document);
-		EventManager.EventReflectionService.RemoveAllEventHandlers(document.LayoutContent);
-		EventManager.EventReflectionService.RemoveAllEventHandlers(document.UserControl);
+		if (document.LayoutContent is not null)
+			EventManager.EventReflectionService.RemoveAllEventHandlers(document.LayoutContent);
+		if (document.UserControl is not null)
+			EventManager.EventReflectionService.RemoveAllEventHandlers(document.UserControl);
 		// Lanza el evento de cierre (antes de cerrar el layout, para que se liberen los recursos)
 		RaiseEventClosedDocument(document);
 		// Cierra el documento
-		document.LayoutContent.Close();
+		if (document.LayoutContent is not null)
+			document.LayoutContent.Close();
 		// Quita el elemento del diccionario
 		if (Documents.ContainsKey(document.Id))
 			Documents.Remove(document.Id);
@@ -311,7 +317,7 @@ public partial class DockLayoutManager : UserControl
 	/// </summary>
 	public void CloseAllDocuments()
 	{
-		List<DockLayoutDocumentModel> documents = new();
+		List<DockLayoutDocumentModel> documents = [];
 
 			// Nota: Al cerrar un formulario se modifica la colección Documents, por tanto no se puede hacer un recorrido sobre Documents
 			//			 porque da un error de colección modificada. Tampoco se puede hacer un recorrido for (int...) sobre Documents porque
@@ -322,8 +328,8 @@ public partial class DockLayoutManager : UserControl
 				documents.Add(document.Value);
 			// Recorre la lista cerrando todos los documentos abiertos
 			for (int index = documents.Count - 1; index >= 0; index--)
-				if (documents[index] != null && documents[index].Type == DockLayoutDocumentModel.DocumentType.Document && 
-						documents[index].LayoutContent != null)
+				if (documents[index] is not null && documents[index].Type == DockLayoutDocumentModel.DocumentType.Document && 
+						documents[index].LayoutContent is not null)
 					try
 					{
 						documents[index]?.LayoutContent?.Close();
@@ -336,7 +342,7 @@ public partial class DockLayoutManager : UserControl
 	/// </summary>
 	public List<object> GetOpenedViews()
 	{
-		List<object> tags = new List<object>();
+		List<object> tags = [];
 
 			// Obtiene los objetos asociados a los documentos abiertos
 			foreach (KeyValuePair<string, DockLayoutDocumentModel> document in Documents)
@@ -351,33 +357,17 @@ public partial class DockLayoutManager : UserControl
 	/// </summary>
 	public void SetTheme(DockTheme theme)
 	{
-		switch (theme)
-		{
-			case DockTheme.Aero:
-					dckManager.Theme = new AvalonDock.Themes.AeroTheme();
-				break;
-			case DockTheme.ExpressionDark:
-					dckManager.Theme = new AvalonDock.Themes.ExpressionDarkTheme();
-				break;
-			case DockTheme.ExpressionLight:
-					dckManager.Theme = new AvalonDock.Themes.ExpressionLightTheme();
-				break;
-			case DockTheme.Metro:
-					dckManager.Theme = new AvalonDock.Themes.MetroTheme();
-				break;
-			case DockTheme.VS2013LightTheme:
-					dckManager.Theme = new AvalonDock.Themes.Vs2013LightTheme();
-				break;
-			case DockTheme.VS2013BlueTheme:
-					dckManager.Theme = new AvalonDock.Themes.Vs2013BlueTheme();
-				break;
-			case DockTheme.VS2013DarkTheme:
-					dckManager.Theme = new AvalonDock.Themes.Vs2013DarkTheme();
-				break;
-			default:
-					dckManager.Theme = new AvalonDock.Themes.VS2010Theme();
-				break;
-		}
+		dckManager.Theme = theme switch
+									{
+										DockTheme.Aero => new AvalonDock.Themes.AeroTheme(),
+										DockTheme.ExpressionDark => new AvalonDock.Themes.ExpressionDarkTheme(),
+										DockTheme.ExpressionLight => new AvalonDock.Themes.ExpressionLightTheme(),
+										DockTheme.Metro => new AvalonDock.Themes.MetroTheme(),
+										DockTheme.VS2013LightTheme => new AvalonDock.Themes.Vs2013LightTheme(),
+										DockTheme.VS2013BlueTheme => new AvalonDock.Themes.Vs2013BlueTheme(),
+										DockTheme.VS2013DarkTheme => new AvalonDock.Themes.Vs2013DarkTheme(),
+										_ => new AvalonDock.Themes.VS2010Theme(),
+									};
 	}
 
 	/// <summary>
@@ -392,7 +382,7 @@ public partial class DockLayoutManager : UserControl
 	/// <summary>
 	///		Documentos
 	/// </summary>
-	public Dictionary<string, DockLayoutDocumentModel> Documents { get; } = new();
+	public Dictionary<string, DockLayoutDocumentModel> Documents { get; } = [];
 
 	/// <summary>
 	///		Documento activo
@@ -407,6 +397,9 @@ public partial class DockLayoutManager : UserControl
 		}
 	}
 
+	/// <summary>
+	///		Trata el evento de arrastrar un archivo sobre el dock
+	/// </summary>
 	private void dckManager_Drop(object sender, DragEventArgs e)
 	{
 		if (e.Data.GetDataPresent(DataFormats.FileDrop))
