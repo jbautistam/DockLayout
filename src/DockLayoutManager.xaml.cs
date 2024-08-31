@@ -25,9 +25,6 @@ public partial class DockLayoutManager : UserControl
 		/// <summary>Abajo</summary>
 		Bottom
 	}
-	/// <summary>
-	///		Temas de las ventanas
-	/// </summary>
 	public enum DockTheme
 	{
 		Aero,
@@ -47,6 +44,9 @@ public partial class DockLayoutManager : UserControl
 	// Variables privadas
 	private DockLayoutDocumentModel? _activeDocument;
 
+	/// <summary>
+	///		Temas de las ventanas
+	/// </summary>
 	public DockLayoutManager()
 	{
 		// Inicializa los componentes
@@ -132,7 +132,7 @@ public partial class DockLayoutManager : UserControl
 	/// <summary>
 	///		Añade / selecciona un documento
 	/// </summary>
-	public void AddDocument(string id, string header, UserControl control, object tag = null)
+	public void AddDocument(string id, string header, UserControl control, object? tag = null)
 	{
 		DockLayoutDocumentModel? previous = GetDocument(id);
 
