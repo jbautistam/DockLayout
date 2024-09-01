@@ -1,6 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
-
+using AvalonDock;
 using AvalonDock.Layout;
 using Bau.Controls.DockLayout.Models;
 
@@ -56,11 +56,14 @@ public partial class DockLayoutManager : UserControl
 		// Inicializa los manejadores de eventos
 		dckManager.ActiveContentChanged += (sender, evntArgs) =>
 													{
-														if (dckManager.ActiveContent != null && dckManager.Layout != null && dckManager.Layout.ActiveContent != null)
+														if (dckManager.ActiveContent is not null && dckManager.Layout is not null && 
+																dckManager.Layout.ActiveContent is not null)
 															ActiveDocument = GetDocument(dckManager.Layout.ActiveContent.ContentId);
 														else
 															ActiveDocument = null;
 													};
+		// dckManager.AnchorableHidden += (sender, args) => TreatEventClosePane(args);
+		dckManager.AnchorableHiding += (sender, args) => TreatEventHidingPane(args);
 	}
 
 	/// <summary>
@@ -79,7 +82,7 @@ public partial class DockLayoutManager : UserControl
 			else
 			{
 				LayoutAnchorGroup layoutGroup = GetGroupPane(dckManager.Layout, position);
-				LayoutAnchorable layoutAnchorable = new LayoutAnchorable { Title = header, ToolTip = header };
+				LayoutAnchorable layoutAnchorable = new() { Title = header, ToolTip = header };
 
 					// Añade el contenido
 					layoutAnchorable.Content = control;
@@ -136,7 +139,7 @@ public partial class DockLayoutManager : UserControl
 	{
 		DockLayoutDocumentModel? previous = GetDocument(id);
 
-			if (previous != null)
+			if (previous is not null)
 			{
 				if (previous.LayoutContent is not null)
 					previous.LayoutContent.IsActive = true;
@@ -202,14 +205,15 @@ public partial class DockLayoutManager : UserControl
 	///		Añade un documento al control o lo selecciona
 	/// </summary>
 	private void AddDocument(string id, string header, DockLayoutDocumentModel.DocumentType type, 
-							 LayoutContent layoutContent, UserControl userControl, object tag = null)
+							 LayoutContent layoutContent, UserControl userControl, object? tag = null)
 	{ 
-		DockLayoutDocumentModel document = new DockLayoutDocumentModel(id, header, type, layoutContent, userControl, tag);
+		DockLayoutDocumentModel document = new(id, header, type, layoutContent, userControl, tag);
 
 			// Añade el documento al diccionario
 			Documents.Add(document.Id, document);
 			// Asigna los manejadores de evento a la vista
 			layoutContent.Closing += (sender, args) => args.Cancel = !TreatEventCloseForm(document);
+			layoutContent.Closed += (sender, args) => RaiseEventClosedDocument(document);
 			layoutContent.IsActiveChanged += (sender, args) => RaiseEventChangeDocument(document);
 			// Activa el documento
 			if (document.LayoutContent is not null)
@@ -258,7 +262,7 @@ public partial class DockLayoutManager : UserControl
 			// Si es un documento, antes de cerrar se pregunta a la ventana principal
 			if (document.Type == DockLayoutDocumentModel.DocumentType.Document)
 			{
-				EventArguments.ClosingEventArgs args = new EventArguments.ClosingEventArgs(document);
+				EventArguments.ClosingEventArgs args = new(document);
 
 					// Llama al manejador de eventos
 					Closing?.Invoke(this, args);
@@ -270,6 +274,16 @@ public partial class DockLayoutManager : UserControl
 				RemoveTab(document);
 			// Devuelve el valor que indica si se puede cerrar el documento
 			return canClose;
+	}
+
+	/// <summary>
+	///		Trata el evento de ocultar un panel
+	/// </summary>
+	private void TreatEventHidingPane(AnchorableHidingEventArgs args)
+	{
+		if (!string.IsNullOrWhiteSpace(args.Anchorable.ContentId) &&
+				Documents.TryGetValue(args.Anchorable.ContentId, out DockLayoutDocumentModel? document))
+			RaiseEventClosedDocument(document);
 	}
 
 	/// <summary>
