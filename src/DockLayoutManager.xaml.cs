@@ -204,23 +204,35 @@ public partial class DockLayoutManager : UserControl
 	/// <summary>
 	///		Oculta un panel
 	/// </summary>
-	public bool HidePane(string tabId, string documentId)
+	public bool HidePane(string id)
 	{
 		bool hidden = false;
 
 			// Oculta el documento si lo encuentra
-			if (Documents.TryGetValue(documentId, out DockLayoutDocumentModel? document))
+			if (Documents.TryGetValue(id, out DockLayoutDocumentModel? document))
 			{
 				// Cierra el panel
 				if (document.LayoutContent is not null)
 					document.LayoutContent.Close();
 				// Elimina el documento
-				Documents.Remove(documentId);
+				Documents.Remove(id);
 				// Indica que se ha podido ocultar
 				hidden = true;
 			}
 			// Devuelve el valor que indica si se ha podido ocultar el panel
 			return hidden;
+	}
+
+	/// <summary>
+	///		Activa un documento
+	/// </summary>
+	public void ActivateDocument(string id)
+	{
+		if (Documents.TryGetValue(id, out DockLayoutDocumentModel? document))
+		{
+			if (document.LayoutContent is not null)
+				document.LayoutContent.IsActive = true;
+		}
 	}
 
 	/// <summary>
